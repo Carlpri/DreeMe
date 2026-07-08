@@ -10,6 +10,10 @@ const authController = new AuthController();
 
 router.post(
   "/register",
+  (req,_res,next)=>{
+    console.log("BODY:",req.body);
+    next();
+  },
   validate(registerSchema),
   authController.register
 );
@@ -20,17 +24,7 @@ router.post(
     authController.login
 );
 
-router.get(
-    "/me",
-    authenticate,
-    (req, res) => {
-        res.json({
-            success: true,
-            user: req.user,
-        });
-    }
 
-);
 router.get(
     "/me",
     authenticate,

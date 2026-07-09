@@ -8,6 +8,9 @@ import brandRoutes from "./modules/brands/brand.routes.js";
 import vendorRotes from "./modules/vendors/vendor.routes.js";
 import productRoutes from "./modules/products/product.routes.js";
 import cartRoutes from "./modules/cart/cart.routes.js";
+import favouriteRoutes from "./modules/favourites/favourite.routes.js";
+import reviewRoutes from "./modules/reviews/review.routes.js";
+import outfitRoutes from "./modules/outfits/outfit.routes.js";
 
 const app = express();
 
@@ -25,6 +28,10 @@ app.use("/api/brands", brandRoutes);
 app.use("/api/vendors", vendorRotes); 
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/favourites", favouriteRoutes);
+app.use("/api/favorites", favouriteRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/outfits", outfitRoutes);
 
 app.use(errorHandler);
 

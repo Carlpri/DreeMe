@@ -306,6 +306,16 @@ model Outfit {
 
   coverImage String?
 
+  likes      Int      @default(0)
+  
+  views      Int      @default(0)
+  
+  isPublic   Boolean  @default(true)
+
+  season     String?
+  
+  occasion   String?
+
   creatorId String
 
   creator User @relation(fields:[creatorId], references:[id])
@@ -378,7 +388,7 @@ model Review {
 
   id String @id @default(cuid())
 
-  rating Int
+  rating Float
 
   comment String?
 

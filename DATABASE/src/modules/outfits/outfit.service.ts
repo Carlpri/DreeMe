@@ -2,6 +2,7 @@ import { Role } from "@prisma/client";
 import slugify from "slugify";
 import { ApiError } from "../../utils/api-error.js";
 import { OutfitRepository } from "./outfit.repository.js";
+
 import type {
   CreateOutfitDto,
   UpdateOutfitDto,
@@ -17,6 +18,34 @@ export class OutfitService {
     await this.ensureProductsExist(data.productIds);
 
     const slug = await this.createUniqueSlug(data.title);
+
+    const existing = await this.repository.findByCreatorAndTitle(
+      creatorId,
+      data.title
+    );
+
+    if (existing) {
+      throw new ApiError(
+        409,
+        "You already have an outfit with this title."
+      );
+    }
+
+    const sortedProductIds = this.uniqueProductIds(data.productIds).sort();
+    const userOutfits = await this.repository.findByCreator(creatorId);
+
+    for (const outfit of userOutfits) {
+      const outfitProductIds = outfit.items
+        .map((item) => item.productId)
+        .sort();
+
+      if (this.hasSameProducts(sortedProductIds, outfitProductIds)) {
+        throw new ApiError(
+          409,
+          "You already have an outfit with these products."
+        );
+      }
+    }
 
     return this.repository.create(creatorId, slug, {
       ...data,
@@ -62,6 +91,24 @@ export class OutfitService {
 
     if (data.productIds) {
       await this.ensureProductsExist(data.productIds);
+
+      const sortedProductIds = this.uniqueProductIds(data.productIds).sort();
+      const userOutfits = await this.repository.findByCreator(userId);
+
+      for (const existingOutfit of userOutfits) {
+        if (existingOutfit.id === id) continue;
+
+        const outfitProductIds = existingOutfit.items
+          .map((item) => item.productId)
+          .sort();
+
+        if (this.hasSameProducts(sortedProductIds, outfitProductIds)) {
+          throw new ApiError(
+            409,
+            "You already have an outfit with these products."
+          );
+        }
+      }
     }
 
     const updateData: UpdateOutfitDto & {
@@ -151,6 +198,11 @@ export class OutfitService {
     }
 
     throw new ApiError(403, "You can only manage your own outfits.");
+  }
+
+  private hasSameProducts(a: string[], b: string[]): boolean {
+    if (a.length !== b.length) return false;
+    return a.every((val, index) => val === b[index]);
   }
 
   private async createUniqueSlug(

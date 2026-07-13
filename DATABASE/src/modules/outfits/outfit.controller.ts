@@ -19,6 +19,8 @@ export class OutfitController {
     );
   });
 
+  
+
   getOutfits = asyncHandler(async (_req, res) => {
     const outfits = await outfitService.getAll();
 

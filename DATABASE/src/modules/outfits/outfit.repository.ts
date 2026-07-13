@@ -118,6 +118,18 @@ export class OutfitRepository {
     });
   }
 
+  async findByCreatorAndTitle(
+  creatorId: string,
+  title: string
+) {
+  return prisma.outfit.findFirst({
+    where: {
+      creatorId,
+      title,
+    },
+  });
+}
+
   async update(
     id: string,
     data: UpdateOutfitDto & {

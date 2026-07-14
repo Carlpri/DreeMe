@@ -37,6 +37,24 @@ enum ProductStatus {
   ARCHIVED
 }
 
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
 model User {
   id          String   @id @default(cuid())
 
@@ -55,6 +73,8 @@ model User {
   savedOutfits SavedOutfit[]
   reviews      Review[]
   cart         Cart?
+  addresses    Address[]
+  orders       Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -192,6 +212,8 @@ model Product {
 
   cartItems CartItem[]
 
+  orderItems OrderItem[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -285,6 +307,8 @@ model ProductVariant {
   product Product @relation(fields:[productId], references:[id])
 
   cartItems CartItem[]
+
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
 
@@ -406,4 +430,104 @@ model Review {
 
   @@unique([userId, productId])
 
+}
+
+model Address {
+
+  id         String   @id @default(cuid())
+
+  userId     String
+
+  fullName   String
+
+  phone      String
+
+  county     String
+
+  city       String
+
+  area       String
+
+  street     String
+
+  building   String?
+
+  postalCode String?
+
+  landmark   String?
+
+  latitude   Float?
+
+  longitude  Float?
+
+  label      String?
+
+  isDefault  Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orders Order[]
+
+  @@index([userId])
+}
+
+model Order {
+
+  id            String        @id @default(cuid())
+
+  orderNumber   String        @unique
+  userId        String
+  addressId     String
+
+  subtotal      Float
+  shippingFee   Float
+  tax           Float
+  discount      Float         @default(0)
+  total         Float
+
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+
+  couponCode    String?
+  notes         String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id])
+  address Address  @relation(fields: [addressId], references: [id])
+  items   OrderItem[]
+
+  @@index([userId])
+  @@index([addressId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+
+  id          String   @id @default(cuid())
+
+  orderId     String
+  productId   String
+  variantId   String?
+
+  productName  String
+  productImage String
+  variantName  String?
+
+  price       Float
+  quantity    Int
+  subtotal    Float
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
 }
